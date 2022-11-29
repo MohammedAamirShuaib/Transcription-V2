@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&family=Poppins:wght@400;500;600&display=swap');
+
+*{
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+}
+
+h1 {
+  color: #330c53;
+  text-align: center;
+  font-size: 30px;
+}
+
+h2 {
+  color: black;
+}
+
+body{
+  margin: 0;
+  padding: 0;
+  background:linear-gradient(45deg,#058ae5,#09b794);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.content_box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 750px;
+  height: 350px;
+  border-radius: 35px;
+  background:linear-gradient(white,#abddfe);
+  box-shadow: 5px 5px 20px rgb(100, 100, 100);
+}
+
+.upload-box {
+  font-size: 18px;
+  font-family: Montserrat, sans-serif;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+  width: 295px;
+  outline: none;
+}
+
+::-webkit-file-upload-button{
+  color: #330c53;
+  background: #09b794;
+  font-family: Montserrat, sans-serif;
+  padding: 10px;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 1px 1px 10px black;
+  outline: none;
+}
+
+
+.btn {
+  position: relative;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background-color: #09b794;
+  padding: 10px 25px;
+  border-radius: 15px;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+  overflow: hidden;
+  font-family: Montserrat, sans-serif;
+  font-size: 18px;
+}
+
+.btn_text {
+  position: relative;
+  font-size: 18px;
+  font-family: Montserrat, sans-serif;
+}
+
+.new_project_btn {
+  position: relative;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background-color: #09b794;
+  padding: 11px 16px;
+  border-radius: 15px;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+  overflow: hidden;
+  font-family: Montserrat, sans-serif;
+  font-size: 18px;
+}
+
+.new_project_btn_text {
+  position: relative;
+  font-size: 18px;
+  font-family: Montserrat, sans-serif;
+}
+
+.btn_load::after {
+  content: '';
+  position: absolute;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  border-top-color: white;
+  padding: 7px 7px;
+  margin: top 10px;
+  background: transparent;
+  font-family: Montserrat, sans-serif;
+  font-size: 18px;
+  cursor: wait;
+  animation: circle_loader 1s ease infinite;
+}
+
+select{
+  border: 2px solid;
+  font-size: 18px;
+  padding: 8px 8px;
+  color: #330c53;
+  border-radius: 18px;
+  width: 490px;
+  border-color:white;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+}
+
+.new_project {
+  background: #09b794;
+  color: #330c53;
+  padding: 11px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  border-radius: 15px;
+  font-family: Montserrat, sans-serif;
+  font-size: 18px;
+  text-decoration: 	none;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+}
+
+@keyframes circle_loader {
+  from { transform: rotate(0turn);}
+  to {transform: rotate(1turn);}
+}

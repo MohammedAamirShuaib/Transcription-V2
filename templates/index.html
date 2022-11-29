@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&family=Poppins:wght@400;500;600&display=swap');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+body{
+  margin: 0;
+  padding: 0;
+  background:linear-gradient(45deg,#058ae5,#09b794);
+  height: 100vh;
+  overflow: hidden;
+}
+h1{
+  color: #09b794;
+}
+.center{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background: linear-gradient(white,#abddfe);
+  border-radius: 25px;
+  box-shadow: 10px 10px 15px rgba(102, 101, 101);
+}
+
+.center form{
+  padding: 0 50px;
+  box-sizing: border-box;
+}
+form .txt_field{
+  position: relative;
+  border-bottom: 2px solid #8b8b8b;
+  margin: 30px 0;
+}
+.txt_field input{
+  width: 100%;
+  padding: 0 5px;
+  height: 40px;
+  font-size: 16px;
+  border: none;
+  background: none;
+  outline: none;
+}
+.txt_field label{
+  position: absolute;
+  top: 25%;
+  left: 5px;
+  color: #8b8b8b;
+  transform: translateY(-20%);
+  font-size: 16px;
+  pointer-events: none;
+  transition: .5s;
+}
+.txt_field span::before{
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: #09b794;
+  transition: .5s;
+}
+.txt_field input:focus ~ label,
+.txt_field input:valid ~ label{
+  top: -5px;
+  color: #09b794;
+}
+.txt_field input:focus ~ span::before,
+.txt_field input:valid ~ span::before{
+  width: 100%;
+}
+.pass{
+  margin: -5px 0 20px 5px;
+  color: #a6a6a6;
+  cursor: pointer;
+}
+.pass:hover{
+  text-decoration: underline;
+}
+input[type="submit"]{
+  width: 100%;
+  height: 50px;
+  border: 1.7px solid #19e3bb;
+  background: #0ad2aa;
+  border-radius: 25px;
+  font-size: 18px;
+  color: #330c53;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+}
+input[type="submit"]:hover{
+  border-color: transparent;
+  transition: .15s;
+}
+.signup_link{
+  margin: 30px 0;
+  text-align: center;
+  font-size: 16px;
+  color: #666666;
+}
+.signup_link a{
+  color: #330c53;
+  text-decoration: none;
+}
+.signup_link a:hover{
+  text-decoration: underline;
+}
+
+</style>
+  <head>
+    <meta charset="utf-8">
+    <title>OSG - Login</title>
+  </head>
+  <body>
+    <div class="center">
+      <br><br>
+      <div class="logo" align="center">
+        <img src="/static/images/logo_trans.png" height="70">
+      </div>
+      <form method="post" action="/{{use_id}}/">
+        <div class="txt_field">
+          <input type="username" name="username" required>
+          <span></span>
+          <label for="username">Username</label>
+        </div>
+        <div class="txt_field">
+          <input type="password" name="password" required>
+          <span></span>
+          <label for="password">Password</label>
+        </div>
+        <input type="submit" value="Sign In"><br><br><br>
+      </form>
+    </div>
+  </body>
+</html>

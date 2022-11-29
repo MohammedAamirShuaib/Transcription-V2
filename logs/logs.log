@@ -1,0 +1,6 @@
+Uploaded File and got temporary URL to file
+Made request and file is currently queued
+starting to transcribe the file: [ short_test_file.mp4 ]
+Processing the file: [ short_test_file.mp4 ]
+transcription completed
+Saving the Transcribed Files to S3: [ short_test_file.mp4 ]

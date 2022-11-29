@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
+
+body{
+  background:linear-gradient(45deg,#058ae5,#09b794);
+  min-height: 100vh;
+}
+
+h2 {
+    color: white;
+    font-family: Montserrat, sans-serif;
+}
+
+p {
+    margin-left: 10%;
+    color: #330c53;
+    font-family: Montserrat, sans-serif;
+}
+
+.home_btn{
+    font-family: "Montserrat", sans-serif;
+    color: white;
+    margin-left: 85%;
+}
+
+table {
+    margin: auto;
+    width: auto;
+    min-width:80%;
+    font-family: "Montserrat", sans-serif;
+    background: #abddfe;
+    border-radius: 12px;
+    box-shadow: 4px 4px 6px rgba(102, 101, 101);
+    border-collapse: collapse;
+    overflow: hidden;
+}
+
+th {
+    padding: 0px;
+    text-align: center;
+    color: white;
+    font-family: "Montserrat", sans-serif;
+}
+
+td {
+    padding: 10px;
+    font-size: 15px;
+    text-align: center;
+    color: #330c53;
+}
+
+tr:nth-child(even) {
+      background-color: #c8e9ff;
+}
+
+tr:nth-child(1) {
+      background-color: #330c53;
+}
+
+
+.dwn-link{
+    font-family: "Montserrat", sans-serif;
+    color: #04987a;	
+}

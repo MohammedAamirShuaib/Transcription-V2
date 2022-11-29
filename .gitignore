@@ -1,0 +1,7 @@
+__pycache__
+apienv
+mysql
+templates/template_presets
+config.ini
+README.md
+static/images
