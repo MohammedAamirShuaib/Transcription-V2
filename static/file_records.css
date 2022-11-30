@@ -10,11 +10,16 @@ h2 {
     font-family: Montserrat, sans-serif;
 }
 
-.home_btn{
+h3 {
+    color: white;
+    font-family: Montserrat, sans-serif;
+}
+
+.nav_btn{
     font-family: "Montserrat", sans-serif;
     color: white;
-    margin-left: 85%;
 }
+
 
 table {
     margin: auto;
@@ -44,7 +49,7 @@ td {
 }
 
 tr:nth-child(even) {
-      background-color: #c8e9ff;
+      background-color: #d4eeff;
 }
 
 tr:nth-child(1) {

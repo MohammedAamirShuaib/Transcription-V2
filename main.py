@@ -96,22 +96,54 @@ async def new_project(username, project_name: str = Form(...)):
 # ------------------------------view previous records------------------------------
 
 
-@app.get('/{username}/records/{use_id}', response_class=HTMLResponse)
-async def get_records(request: Request):
+@app.get('/{username}/projects/{use_id}', response_class=HTMLResponse)
+async def get_projects(request: Request):
     mydb = Connect.db()
     use_id = request.path_params['use_id']
     username = request.path_params['username']
+    mydb = Connect.db()
     record_cursor = mydb.cursor()
-    record_cursor.execute("select * from Records order by date_time DESC;")
+    record_cursor.execute(
+        "SELECT project_name FROM Projects ORDER BY id DESC;")
+    table_rows = record_cursor.fetchall()
+    project_dict = {'project_name': [], "count": []}
+    for proj in table_rows:
+        record_cursor.execute(
+            "SELECT count(id) from Records WHERE project_name='"+proj[0]+"';")
+        count_files = record_cursor.fetchall()
+        project_dict['count'].append(count_files[0][0])
+        project_dict['project_name'].append(proj[0])
+    table = ""
+    for i in range(len(project_dict['project_name'])):
+        project_name = project_dict['project_name'][i]
+        if project_dict['count'][i] > 0:
+            no_count = str(project_dict['count'][i])+" Files"
+        else:
+            no_count = "No Files Yet"
+        link = use_id+"/"+project_name
+        table += "<tr><td>"+project_name+"</td><td><a href='" + \
+            link+"' class='project-link'>"+no_count+"</td></tr>"
+    return HTMLResponse(content=html_get_projects(table, use_id, username), status_code=200)
+
+
+@app.get('/{username}/projects/{use_id}/{project_name}', response_class=HTMLResponse)
+async def get_files(request: Request):
+    mydb = Connect.db()
+    use_id = request.path_params['use_id']
+    username = request.path_params['username']
+    project_name = request.path_params['project_name']
+    record_cursor = mydb.cursor()
+    record_cursor.execute("SELECT * FROM Records WHERE project_name='" +
+                          project_name+"' ORDER BY date_time DESC;")
     table_rows = record_cursor.fetchall()
     table = ""
     for re in table_rows:
         table += "<tr><td>"+re[1].strftime("%d-%m-%Y %I:%M %p") + \
-            "</td><td>"+re[2]+"</td><td>"+re[3]+"</td><td>"+re[4]+"</td>"
+            "</td><td>"+re[2]+"</td><td>"+re[4]+"</td>"
         table += "<td><a href='"+re[5]+"' class='dwn-link'>Download</a></td>"
         table += "<td><a href='"+re[6] + \
             "' class='dwn-link'>Download</a></td></tr>"
-    return HTMLResponse(content=html_get_records(table, use_id, username), status_code=200)
+    return HTMLResponse(content=html_get_records(table, use_id, username, project_name), status_code=200)
 
 # ------------------------------back to home page ------------------------------
 
