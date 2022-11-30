@@ -167,7 +167,7 @@ async def user(request: Request):
 @app.get('/error/{lines}', response_class=HTMLResponse)
 async def get_error(request: Request):
     try:
-        error_file = open('logs/error_log.txt', 'r')
+        error_file = open('logs/errors.log', 'r')
         error_lines = error_file.readlines()
         n = int(request.path_params['lines'])
         if len(error_lines) > n:

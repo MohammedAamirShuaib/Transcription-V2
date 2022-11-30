@@ -289,7 +289,7 @@ def start_transcribe(project_name, files, dir_name, use_id, username):
                         html += "<tr><td>"+username+"</td><td>"+project_name+"</td><td>" + \
                             fname+"</td><td>-</td><td>-</td><td>-</td><td>error</td></tr>"
                         exception_html += fname+": please check the file and try again <br>"
-                        error_log = open("logs/error_log.txt", "a+")
+                        error_log = open("logs/errors.log", "a+")
                         error_str = datetime.now().strftime("%m-%d-%Y, %I:%M %p")+":     "+username + \
                             ":     ["+fname + \
                             "]       : AssemblyAI Processing Error"
