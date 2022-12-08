@@ -286,7 +286,7 @@ def start_transcribe(project_name, files, dir_name, use_id, username, lang):
             fname = file.filename
             pre_cursor = mydb.cursor()
             pre_cursor.execute(
-                "select username,project_name,fname,doc_download_link,csv_download_link,transcription_time from Records where project_name ='"+project_name+"' and fname ='"+fname+"';")
+                "select username,project_name,file_name,doc_download_link,csv_download_link,transcription_time from Records where project_name ='"+project_name+"' and file_name ='"+fname+"';")
             table_rows = pre_cursor.fetchall()
             for re in table_rows:
                 html += "<tr><td>"+re[0]+"</td><td>" + \
@@ -345,7 +345,7 @@ def start_transcribe(project_name, files, dir_name, use_id, username, lang):
                     csv_download_link = endpoint+project_name+"/"+fname+".csv"
 
                     record_cursor = mydb.cursor()
-                    query = "INSERT into Records(date_time,username,project_name,fname,doc_download_link,csv_download_link,transcription_time,language) values(%s,%s,%s,%s,%s,%s,%s,%s)"
+                    query = "INSERT into Records(date_time,username,project_name,file_name,doc_download_link,csv_download_link,transcription_time,language) values(%s,%s,%s,%s,%s,%s,%s,%s)"
                     record = [(datetime.now(), username, project_name, fname,
                                doc_download_link, csv_download_link, transcription_time, "English"),]
                     record_cursor.executemany(query, record)
@@ -393,7 +393,7 @@ def start_transcribe(project_name, files, dir_name, use_id, username, lang):
                     trans_download_link = endpoint+project_name+"/translated_"+fname+".docx"
 
                     record_cursor = mydb.cursor()
-                    query = "INSERT into Records(date_time,username,project_name,fname,doc_download_link,csv_download_link,transcription_time,language) values(%s,%s,%s,%s,%s,%s,%s,%s)"
+                    query = "INSERT into Records(date_time,username,project_name,file_name,doc_download_link,csv_download_link,transcription_time,language) values(%s,%s,%s,%s,%s,%s,%s,%s)"
                     record = [(datetime.now(), username, project_name, fname,
                                doc_download_link, trans_download_link, transcription_time, "Non English"),]
                     record_cursor.executemany(query, record)
