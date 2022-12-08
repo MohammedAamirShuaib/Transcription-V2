@@ -84,7 +84,6 @@ input[type=project_name]:focus{
 .backbtn {
   position: relative;
   margin:7px 14px;
-  cursor: pointer;
 }
 
 </style>
@@ -101,7 +100,7 @@ input[type=project_name]:focus{
       <img src="/static/images/logo_trans.png" height="60"><br/>
       <h1>Video Transcription Tool</h1>
       <h3>Add a New Project</h3>
-        <form action="/{{username}}/add_new_project" method="post" align="center">
+        <form action="/{{use_id}}/{{username}}/Non_English/add_new_project/" method="post" align="center">
           <input type="project_name" name="project_name" placeholder="Enter Project Name" required>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           <button class="btn">

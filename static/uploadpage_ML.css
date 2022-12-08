@@ -26,11 +26,11 @@ body{
 
 .content_box {
   position: absolute;
-  top: 50%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 750px;
-  height: 350px;
+  height: 400px;
   border-radius: 35px;
   background:linear-gradient(white,#abddfe);
   box-shadow: 5px 5px 20px rgb(100, 100, 100);
@@ -43,6 +43,16 @@ body{
   border-radius: 15px;
   box-shadow: 2px 2px 5px rgb(82, 82, 82);
   width: 295px;
+  outline: none;
+}
+
+.select_lang {
+  font-size: 18px;
+  font-family: Montserrat, sans-serif;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+  width: 100px;
   outline: none;
 }
 
@@ -79,6 +89,26 @@ body{
   color:#330c53;
 }
 
+.new_project_btn {
+  position: relative;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background-color: #09b794;
+  padding: 11px 16px;
+  border-radius: 15px;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+  overflow: hidden;
+  font-family: Montserrat, sans-serif;
+  font-size: 18px;
+}
+
+.new_project_btn_text {
+  position: relative;
+  font-size: 18px;
+  font-family: Montserrat, sans-serif;
+}
+
 .btn_load::after {
   content: '';
   position: absolute;
@@ -94,13 +124,24 @@ body{
   animation: circle_loader 1s ease infinite;
 }
 
-select{
+.project_box{
   border: 2px solid;
   font-size: 18px;
   padding: 8px 8px;
   color: #330c53;
   border-radius: 18px;
-  width: 490px;
+  width: 350px;
+  border-color:white;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+}
+
+.language_box{
+  border: 2px solid;
+  font-size: 18px;
+  padding: 8px 8px;
+  color: #330c53;
+  border-radius: 18px;
+  width: 220px;
   border-color:white;
   box-shadow: 2px 2px 5px rgb(82, 82, 82);
 }
@@ -119,7 +160,7 @@ select{
   box-shadow: 2px 2px 5px rgb(82, 82, 82);
 }
 
-.other_lang {
+.eng_lang {
   background: #09b794;
   color: #330c53;
   padding: 11px 16px;
@@ -133,6 +174,10 @@ select{
   font-size: 18px;
   text-decoration: 	none;
   box-shadow: 2px 2px 5px rgb(82, 82, 82);
+}
+
+.note_box{
+  color:#330c53;
 }
 
 @keyframes circle_loader {

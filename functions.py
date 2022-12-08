@@ -14,6 +14,7 @@ import requests
 import pandas as pd
 import docx
 import random
+from deep_translator import GoogleTranslator
 
 
 class Connect:
@@ -24,7 +25,7 @@ class Connect:
         return config
 
     def initiate_db():
-        Connect.config()
+        config = Connect.config()
         db = mysql.connector.connect(
             host=config['MySQL']['host'],
             user=config['MySQL']['user'],
@@ -43,11 +44,13 @@ class Connect:
             start_cursor.execute("CREATE TABLE `transcriptions`.`Records` (`id` INT NOT NULL AUTO_INCREMENT,`date_time` DATETIME NULL,`username` VARCHAR(50) NULL,`project_name` VARCHAR(200) NULL,`fname` VARCHAR(200) NULL,`doc_download_link` VARCHAR(500) NULL,`csv_download_link` VARCHAR(500) NULL,`transcription_time` VARCHAR(50) NULL,PRIMARY KEY (`id`));")
             start_cursor.execute(
                 "CREATE TABLE `transcriptions`.`Projects` (`id` INT NOT NULL AUTO_INCREMENT,`project_name` VARCHAR(200) NULL,`username` VARCHAR(50) NULL,PRIMARY KEY (`id`),UNIQUE INDEX `project_name_UNIQUE` (`project_name` ASC) VISIBLE);")
+            start_cursor.execute(
+                "CREATE TABLE `transcriptions`.`Languages` (`id` INT NOT NULL AUTO_INCREMENT,`language` VARCHAR(200) NULL,`language_code` VARCHAR(5) NULL,PRIMARY KEY (`id`),UNIQUE INDEX `language_UNIQUE` (`language` ASC) VISIBLE);")
             db.commit()
 
     def db():
         global mydb
-        Connect.config()
+        config = Connect.config()
         mydb = mysql.connector.connect(
             host=config['MySQL']['host'],
             user=config['MySQL']['user'],
@@ -59,7 +62,7 @@ class Connect:
 
     def s3():
         global s3
-        Connect.config()
+        config = Connect.config()
         s3 = boto3.client('s3',
                           aws_access_key_id=config['S3SETTINGS']['access_key_id'],
                           aws_secret_access_key=config['S3SETTINGS']['secret_key_id'],
@@ -78,39 +81,37 @@ def authenticate(username, password):
     except IndexError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail='Invalid username or password')
-    dir_name = str(uuid.uuid4())
-    username = username
+    return True
+
+
+def get_english_projects():
+    mydb = Connect.db()
     project_cursor = mydb.cursor()
-    project_cursor.execute("select project_name from Projects;")
+    project_cursor.execute(
+        "select project_name from Projects WHERE language ='English';")
+    select_box_html = ""
+    for i in project_cursor:
+        select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
+    dir_name = str(uuid.uuid4())
+    return select_box_html, dir_name
+
+
+def get_other_projects():
+    mydb = Connect.db()
+    project_cursor = mydb.cursor()
+    project_cursor.execute(
+        "select project_name from Projects WHERE language ='Non English';")
     select_box_html = ""
     for i in project_cursor:
         select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
 
-    return select_box_html, dir_name
-
-
-def setup(username):
-    Connect.db()
-    dir_name = str(uuid.uuid4())
-    username = username
-    project_cursor = mydb.cursor()
-    project_cursor.execute("select project_name from Projects;")
-    select_box_html = ""
+    project_cursor.execute("select language from Languages;")
+    language_box_html = ""
     for i in project_cursor:
-        select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
-    return select_box_html, dir_name
+        language_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
 
-
-def get_projects():
-    Connect.db()
-    user_cursor = mydb.cursor()
     dir_name = str(uuid.uuid4())
-    project_cursor = mydb.cursor()
-    project_cursor.execute("select project_name from Projects;")
-    select_box_html = ""
-    for i in project_cursor:
-        select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
-    return select_box_html, dir_name
+    return select_box_html, language_box_html, dir_name
 
 
 def emotion_results(dict, emotion):
@@ -120,19 +121,19 @@ def emotion_results(dict, emotion):
     except:
         return None
 
+# ------------------------------------------
 
-def get_url(token, file):
+
+def transcribe_english(file, token):
     headers = {'authorization': token}
-    response = requests.post('https://api.assemblyai.com/v2/upload',
-                             headers=headers,
-                             data=file)
-    url = response.json()["upload_url"]
-    print("Uploaded File and got temporary URL to file")
-    return url
+    url_response = requests.post('https://api.assemblyai.com/v2/upload',
+                                 headers=headers,
+                                 data=file)
 
+    url = url_response.json()["upload_url"]
 
-def get_transcribe_id(token, url):
-    endpoint = "https://api.assemblyai.com/v2/transcript"
+    id_endpoint = "https://api.assemblyai.com/v2/transcript"
+
     json = {
         "audio_url": url,
         "speaker_labels": True,
@@ -142,29 +143,54 @@ def get_transcribe_id(token, url):
         "auto_chapters": True,
         "entity_detection": True
     }
-    headers = {
-        "authorization": token,
-        "content-type": "application/json"
-    }
-    response = requests.post(endpoint, json=json, headers=headers)
-    id = response.json()['id']
-    print("Made request and file is currently queued")
-    return id
 
+    headers = {"authorization": token, "content-type": "application/json"}
+    id_response = requests.post(id_endpoint, json=json, headers=headers)
+    transcribe_id = id_response.json()['id']
+    text_endpoint = "https://api.assemblyai.com/v2/transcript/"+transcribe_id
+    headers = {"authorization": token, }
+    result = requests.get(text_endpoint, headers=headers).json()
 
-def upload_file(token, file):
-    file_url = get_url(token, file)
-    transcribe_id = get_transcribe_id(token, file_url)
-    return transcribe_id
-
-
-def get_text(token, transcribe_id):
-    endpoint = f"https://api.assemblyai.com/v2/transcript/{transcribe_id}"
-    headers = {
-        "authorization": token
-    }
-    result = requests.get(endpoint, headers=headers).json()
+    while result.get("status") != 'completed':
+        if result.get("status") == 'error':
+            return "error"
+        text_endpoint = f"https://api.assemblyai.com/v2/transcript/{transcribe_id}"
+        headers = {"authorization": token}
+        result = requests.get(text_endpoint, headers=headers).json()
     return result
+
+
+def transcribe_other_lang(file, token, lang):
+    headers = {'authorization': token}
+    url_response = requests.post('https://api.assemblyai.com/v2/upload',
+                                 headers=headers,
+                                 data=file)
+
+    url = url_response.json()["upload_url"]
+
+    id_endpoint = "https://api.assemblyai.com/v2/transcript"
+
+    json = {
+        "audio_url": url,
+        "language_code": lang
+    }
+
+    headers = {"authorization": token, "content-type": "application/json"}
+    id_response = requests.post(id_endpoint, json=json, headers=headers)
+    transcribe_id = id_response.json()['id']
+    text_endpoint = "https://api.assemblyai.com/v2/transcript/"+transcribe_id
+    headers = {"authorization": token, }
+    result = requests.get(text_endpoint, headers=headers).json()
+
+    while result.get("status") != 'completed':
+        if result.get("status") == 'error':
+            return "error"
+        text_endpoint = f"https://api.assemblyai.com/v2/transcript/{transcribe_id}"
+        headers = {"authorization": token}
+        result = requests.get(text_endpoint, headers=headers).json()
+    return result
+
+# ------------------------------------------
 
 
 def json_data_extraction(result, fname):
@@ -185,7 +211,7 @@ def json_data_extraction(result, fname):
     audindex['label_1'] = ""
     audindex['label_2'] = ""
     audindex['label_3'] = ""
-    speakers = list(audindex.speaker)  # Change df to your dataframe name
+    speakers = list(audindex.speaker)
     previous_speaker = 'A'
     l = len(speakers)
     i = 0
@@ -247,8 +273,8 @@ def json_data_extraction(result, fname):
     return df, doc
 
 
-def start_transcribe(project_name, files, dir_name, use_id, username):
-    Connect.config()
+def start_transcribe(project_name, files, dir_name, use_id, username, lang):
+    config = Connect.config()
     mydb = Connect.db()
     s3 = Connect.s3()
     tokens = eval(config['AssemblyAI']['tokens'])
@@ -278,72 +304,107 @@ def start_transcribe(project_name, files, dir_name, use_id, username):
             if fname not in file_list:
                 transcription_start_time = time.time()
                 token = tokens[random.randint(0, len(tokens)-1)]
-                tid = upload_file(token, file.file)
-                result = {}
-                print('starting to transcribe the file: [ {} ]'.format(fname))
-                print('Processing the file: [ {} ]'.format(fname))
-                while result.get("status") != 'completed':
-                    result = get_text(token, tid)
-                    # Handeling Errors
-                    if result.get("status") == 'error':
-                        html += "<tr><td>"+username+"</td><td>"+project_name+"</td><td>" + \
-                            fname+"</td><td>-</td><td>-</td><td>-</td><td>error</td></tr>"
-                        exception_html += fname+": please check the file and try again <br>"
-                        error_log = open("logs/errors.log", "a+")
-                        error_str = datetime.now().strftime("%m-%d-%Y, %I:%M %p")+":     "+username + \
-                            ":     ["+fname + \
-                            "]       : AssemblyAI Processing Error"
-                        error_log.write(error_str+"\n")
-                        error_log.close()
-                        return HTMLResponse(content=html_completed(html, exception_html, username, use_id), status_code=200)
+                if lang == "en":
+                    result = transcribe_english(file.file, token)
+                else:
+                    result = transcribe_other_lang(file.file, token, lang)
+                if result == "error":
+                    html += "<tr><td>"+username+"</td><td>"+project_name+"</td><td>" + \
+                        fname+"</td><td>-</td><td>-</td><td>-</td><td>error</td></tr>"
+                    exception_html += fname+": please check the file and try again <br>"
+                    error_log = open("logs/errors.log", "a+")
+                    error_str = datetime.now().strftime("%m-%d-%Y, %I:%M %p")+":     "+username + \
+                        ":     ["+fname + \
+                        "]       : AssemblyAI Processing Error"
+                    error_log.write(error_str+"\n")
+                    error_log.close()
+                    return HTMLResponse(content=html_completed(html, exception_html, username, use_id), status_code=200)
                 transcription_time = str(
                     round((time.time()-transcription_start_time)/60, 2))+" mins"
                 print("transcription completed")
-                df, doc = json_data_extraction(result, fname)
+                if lang == "en":
+                    df, doc = json_data_extraction(result, fname)
+                    df_path = "documents/"+dir_name+"/"+project_name+"/"+fname+".csv"
+                    doc_path = "documents/"+dir_name+"/"+project_name+"/"+fname+".docx"
+                    df.to_csv(df_path, index=False)
+                    doc.save(doc_path)
 
-                print(
-                    'Saving the Transcribed Files to S3: [ {} ]'.format(fname))
-                df.to_csv("documents/"+dir_name+"/"+project_name +
-                          "/"+fname+".csv", index=False)
-                doc.save("documents/"+dir_name+"/" +
-                         project_name+"/"+fname+".docx")
+                    s3.upload_file(doc_path,
+                                   config['S3SETTINGS']['bucket'],
+                                   config['S3SETTINGS']['folder']+project_name+"/"+fname+".docx")
 
-                s3.upload_file("documents/"+dir_name+"/"+project_name+"/"+fname+".docx",
-                               config['S3SETTINGS']['bucket'],
-                               config['S3SETTINGS']['folder']+project_name+"/"+fname+".docx")
+                    s3.upload_file(df_path,
+                                   config['S3SETTINGS']['bucket'],
+                                   config['S3SETTINGS']['folder']+project_name+"/"+fname+".csv")
 
-                s3.upload_file("documents/"+dir_name+"/"+project_name+"/"+fname+".csv",
-                               config['S3SETTINGS']['bucket'],
-                               config['S3SETTINGS']['folder']+project_name+"/"+fname+".csv")
+                    os.remove(doc_path)
+                    os.remove(df_path)
 
-                os.remove("documents/"+dir_name+"/" +
-                          project_name+"/"+fname+".docx")
-                os.remove("documents/"+dir_name+"/" +
-                          project_name+"/"+fname+".csv")
+                    endpoint = "http://ec2-54-164-248-248.compute-1.amazonaws.com/download/"
+                    doc_download_link = endpoint+project_name+"/"+fname+".docx"
+                    csv_download_link = endpoint+project_name+"/"+fname+".csv"
 
-                doc_download_link = "http://ec2-54-164-248-248.compute-1.amazonaws.com/download/" + \
-                    project_name+"/"+fname+".docx"
-                csv_download_link = "http://ec2-54-164-248-248.compute-1.amazonaws.com/download/" + \
-                    project_name+"/"+fname+".csv"
+                    record_cursor = mydb.cursor()
+                    query = "INSERT into Records(date_time,username,project_name,fname,doc_download_link,csv_download_link,transcription_time,language) values(%s,%s,%s,%s,%s,%s,%s,%s)"
+                    record = [(datetime.now(), username, project_name, fname,
+                               doc_download_link, csv_download_link, transcription_time, "English"),]
+                    record_cursor.executemany(query, record)
+                    mydb.commit()
 
-                record_cursor = mydb.cursor()
-                query = "INSERT into Records(date_time,username,project_name,fname,doc_download_link,csv_download_link,transcription_time) values(%s,%s,%s,%s,%s,%s,%s)"
-                doc_download_link = "http://ec2-54-164-248-248.compute-1.amazonaws.com/download/" + \
-                    project_name+"/"+fname+".docx"
-                csv_download_link = "http://ec2-54-164-248-248.compute-1.amazonaws.com/download/" + \
-                    project_name+"/"+fname+".csv"
-                record = [(datetime.now(), username, project_name, fname,
-                           doc_download_link, csv_download_link, transcription_time),]
-                record_cursor.executemany(query, record)
-                mydb.commit()
+                    html += "<tr><td>"+username+"</td><td>"+project_name+"</td><td>"+fname+"</td>"
+                    html += "<td><a href='"+doc_download_link + \
+                        "' class='dwn-link'>Download</a></td>"
+                    html += "<td><a href='"+csv_download_link + \
+                        "' class='dwn-link'>Download</a></td>"
+                    html += "<td>"+transcription_time+"</td><td>success</td></tr>"
+                else:
+                    text = result['text']
+                    text_list = text.split(".")
+                    translated_text_list = []
+                    for text in text_list:
+                        translated = GoogleTranslator(
+                            source='auto', target='en').translate(text)
+                        translated_text_list.append(translated)
+                    translated_text = ". ".join(translated_text_list)
+                    doc = docx.Document()
+                    doc.add_heading(project_name+": "+fname, level=1)
+                    doc.add_paragraph(result['text'])
+                    doc_path = "documents/"+dir_name+"/"+project_name+"/"+fname+".docx"
+                    doc.save(doc_path)
+                    doc1 = docx.Document()
+                    doc1.add_heading(project_name+": "+fname, level=1)
+                    doc1.add_paragraph(translated_text)
+                    tdoc_path = "documents/"+dir_name+"/"+project_name+"/translated_"+fname+".docx"
+                    doc1.save(tdoc_path)
 
-                html += "<tr><td>"+username+"</td><td>"+project_name+"</td><td>"+fname+"</td>"
-                html += "<td><a href='"+doc_download_link + \
-                    "' class='dwn-link'>Download</a></td>"
-                html += "<td><a href='"+csv_download_link + \
-                    "' class='dwn-link'>Download</a></td>"
-                html += "<td>"+transcription_time+"</td><td>success</td></tr>"
+                    s3.upload_file(doc_path,
+                                   config['S3SETTINGS']['bucket'],
+                                   config['S3SETTINGS']['folder']+project_name+"/"+fname+".docx")
 
+                    s3.upload_file(tdoc_path,
+                                   config['S3SETTINGS']['bucket'],
+                                   config['S3SETTINGS']['folder']+project_name+"/translated_"+fname+".docx")
+
+                    os.remove(doc_path)
+                    os.remove(tdoc_path)
+
+                    endpoint = "http://ec2-54-164-248-248.compute-1.amazonaws.com/download/"
+                    doc_download_link = endpoint+project_name+"/"+fname+".docx"
+                    trans_download_link = endpoint+project_name+"/translated_"+fname+".docx"
+
+                    record_cursor = mydb.cursor()
+                    query = "INSERT into Records(date_time,username,project_name,fname,doc_download_link,csv_download_link,transcription_time,language) values(%s,%s,%s,%s,%s,%s,%s,%s)"
+                    record = [(datetime.now(), username, project_name, fname,
+                               doc_download_link, trans_download_link, transcription_time, "Non English"),]
+                    record_cursor.executemany(query, record)
+                    mydb.commit()
+
+                    html += "<tr><td>"+username+"</td><td>"+project_name+"</td><td>"+fname+"</td>"
+                    html += "<td><a href='"+doc_download_link + \
+                        "' class='dwn-link'>Download</a></td>"
+                    html += "<td><a href='"+trans_download_link + \
+                        "' class='dwn-link'>Download</a></td>"
+                    html += "<td>"+transcription_time+"</td><td>success</td></tr>"
     except Exception as e:
         error_log = open("logs/error_log.txt", "a+")
         error_str = datetime.now().strftime("%m-%d-%Y, %I:%M %p") + \

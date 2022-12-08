@@ -20,35 +20,55 @@ Connect.initiate_db()
 @app.get('/', response_class=HTMLResponse)
 async def get_sign_in(request: Request):
     use_id = str(uuid.uuid4())[0:8]
-    return templates.TemplateResponse("index.html", {'request': request, 'use_id': use_id})
+    return templates.TemplateResponse("login.html", {'request': request, 'use_id': use_id})
 
 # ------------------------------authenticate and view transcription page------------------------------
 
 
-@app.post('/{use_id}/')
-async def user(use_id, username: str = Form(...), password: str = Form(...)):
-    select_box_html, dir_name = authenticate(username, password)
-    return HTMLResponse(content=html_webpage(select_box_html, dir_name, use_id, username), status_code=200)
+@app.post('/{use_id}/', response_class=HTMLResponse)
+async def landingpage(request: Request, use_id, username: str = Form(...), password: str = Form(...)):
+    valid = authenticate(username, password)
+    if valid:
+        select_box_html, dir_name = get_english_projects()
+        return HTMLResponse(content=html_english_webpage(select_box_html, dir_name, use_id, username), status_code=200)
+
+
+@app.get('/{use_id}/{username}/Non_English/', response_class=HTMLResponse)
+async def other_transcription(request: Request, use_id, username):
+    select_box_html, language_box_html, dir_name = get_other_projects()
+    return HTMLResponse(content=html_other_webpage(select_box_html, language_box_html, dir_name, use_id, username), status_code=200)
 
 # ------------------------------start transcriptions------------------------------
 
 
-@app.post("/{use_id}/{username}/{dir_name}/", response_class=HTMLResponse)
-async def transcribe(*, project_name: str = Form(...), files: List[UploadFile] = File(...), dir_name, use_id, username):
+@app.post("/{use_id}/{username}/English/{dir_name}/", response_class=HTMLResponse)
+async def transcribe_english(*, project_name: str = Form(...), files: List[UploadFile] = File(...), dir_name, use_id, username):
     html, exception_html, username, use_id = start_transcribe(
-        project_name, files, dir_name, use_id, username)
+        project_name, files, dir_name, use_id, username, "en")
     return HTMLResponse(content=html_completed(html, exception_html, username, use_id), status_code=200)
+
+
+@app.post("/{use_id}/{username}/Other/{dir_name}/", response_class=HTMLResponse)
+async def transcribe_other(*, project_name: str = Form(...), language: str = Form(...), files: List[UploadFile] = File(...), dir_name, use_id, username):
+    config = Connect.config()
+    languages = eval(config['Languages']['languages'])
+    lang = languages['language_code'][languages['language'].index(language)]
+    html, exception_html, username, use_id = start_transcribe(
+        project_name, files, dir_name, use_id, username, lang)
+    return HTMLResponse(content=html_non_english_completed(html, exception_html, username, use_id), status_code=200)
 
 # ------------------------------download transcribed file------------------------------
 
 
-@app.get('/download/{project_name}/{file_path}/')
+@app.get('/download/{project_name}/{file_path}/', response_class=RedirectResponse)
 async def download(project_name, file_path):
-    Connect.config()
+    config = Connect.config()
     s3 = Connect.s3()
     zip_url = s3.generate_presigned_url(ClientMethod='get_object',
-                                        Params={'Bucket': config['S3SETTINGS']['bucket'],
-                                                'Key': config['S3SETTINGS']['folder']+project_name+"/"+file_path},
+                                        Params={
+                                            'Bucket': config['S3SETTINGS']['bucket'],
+                                            'Key': config['S3SETTINGS']['folder']+project_name+"/"+file_path
+                                        },
                                         ExpiresIn=120)
     return RedirectResponse(zip_url)
 
@@ -73,15 +93,20 @@ async def create_user(request: Request, email_id: str = Form(...), username: str
 async def create_project(request: Request, username):
     return templates.TemplateResponse("new_project.html", {'request': request, 'username': username})
 
+
+@app.get('/{use_id}/{username}/Non_English/create_new_project')
+async def create_project(request: Request, username, use_id):
+    return templates.TemplateResponse("new_project_NE.html", {'request': request, 'use_id': use_id, 'username': username})
+
 # ------------------------------add new project------------------------------
 
 
-@app.post('/{username}/add_new_project')
-async def new_project(username, project_name: str = Form(...)):
+@app.post('/{username}/add_new_project/')
+async def new_project(request: Request, username, project_name: str = Form(...)):
     mydb = Connect.db()
     add_project_cursor = mydb.cursor()
-    query = "INSERT into Projects(project_name,username) values(%s,%s)"
-    add_project = [(project_name, username),]
+    query = "INSERT into Projects(project_name,username, language) values(%s,%s,%s)"
+    add_project = [(project_name, username, "English"),]
     add_project_cursor.executemany(query, add_project)
     mydb.commit()
     use_id = str(uuid.uuid4())[0:8]
@@ -91,7 +116,25 @@ async def new_project(username, project_name: str = Form(...)):
     select_box_html = ""
     for i in project_cursor:
         select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
-    return HTMLResponse(content=html_webpage(select_box_html, dir_name, use_id, username), status_code=200)
+    return templates.TemplateResponse("added_new_project.html", {'request': request, 'username': username})
+
+
+@app.post('/{use_id}/{username}/Non_English/add_new_project/')
+async def new_project(request: Request, username, project_name: str = Form(...)):
+    mydb = Connect.db()
+    add_project_cursor = mydb.cursor()
+    query = "INSERT into Projects(project_name,username,language) values(%s,%s,%s)"
+    add_project = [(project_name, username, "Non English"),]
+    add_project_cursor.executemany(query, add_project)
+    mydb.commit()
+    use_id = str(uuid.uuid4())[0:8]
+    dir_name = str(uuid.uuid4())
+    project_cursor = mydb.cursor()
+    project_cursor.execute("select project_name from Projects;")
+    select_box_html = ""
+    for i in project_cursor:
+        select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
+    return templates.TemplateResponse("added_new_project.html", {'request': request, 'username': username})
 
 # ------------------------------view previous records------------------------------
 
@@ -104,7 +147,7 @@ async def get_projects(request: Request):
     mydb = Connect.db()
     record_cursor = mydb.cursor()
     record_cursor.execute(
-        "SELECT project_name FROM Projects ORDER BY id DESC;")
+        "SELECT project_name FROM Projects WHERE language = 'English' ORDER BY id DESC;")
     table_rows = record_cursor.fetchall()
     project_dict = {'project_name': [], "count": []}
     for proj in table_rows:
@@ -134,7 +177,7 @@ async def get_files(request: Request):
     project_name = request.path_params['project_name']
     record_cursor = mydb.cursor()
     record_cursor.execute("SELECT * FROM Records WHERE project_name='" +
-                          project_name+"' ORDER BY date_time DESC;")
+                          project_name+"' AND language = 'English' ORDER BY date_time DESC;")
     table_rows = record_cursor.fetchall()
     table = ""
     for re in table_rows:
@@ -143,23 +186,58 @@ async def get_files(request: Request):
         table += "<td><a href='"+re[5]+"' class='dwn-link'>Download</a></td>"
         table += "<td><a href='"+re[6] + \
             "' class='dwn-link'>Download</a></td></tr>"
-    return HTMLResponse(content=html_get_records(table, use_id, username, project_name), status_code=200)
-
-# ------------------------------back to home page ------------------------------
+    return HTMLResponse(content=html_get_english_records(table, use_id, username, project_name), status_code=200)
 
 
-@app.get('/home/{username}/{use_id}/')
-async def user(request: Request):
+@app.get('/{use_id}/{username}/Non_English/projects/', response_class=HTMLResponse)
+async def get_projects(request: Request):
     mydb = Connect.db()
-    dir_name = str(uuid.uuid4())
     use_id = request.path_params['use_id']
     username = request.path_params['username']
-    project_cursor = mydb.cursor()
-    project_cursor.execute("select project_name from Projects;")
-    select_box_html = ""
-    for i in project_cursor:
-        select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
-    return HTMLResponse(content=html_webpage(select_box_html, dir_name, use_id, username), status_code=200)
+    mydb = Connect.db()
+    record_cursor = mydb.cursor()
+    record_cursor.execute(
+        "SELECT project_name FROM Projects WHERE language = 'Non English' ORDER BY id DESC;")
+    table_rows = record_cursor.fetchall()
+    project_dict = {'project_name': [], "count": []}
+    for proj in table_rows:
+        record_cursor.execute(
+            "SELECT count(id) from Records WHERE project_name='"+proj[0]+"';")
+        count_files = record_cursor.fetchall()
+        project_dict['count'].append(count_files[0][0])
+        project_dict['project_name'].append(proj[0])
+    table = ""
+    for i in range(len(project_dict['project_name'])):
+        project_name = project_dict['project_name'][i]
+        if project_dict['count'][i] > 0:
+            no_count = str(project_dict['count'][i])+" Files"
+        else:
+            no_count = "No Files Yet"
+        link = use_id+"/"+project_name
+        table += "<tr><td>"+project_name+"</td><td><a href='" + \
+            link+"' class='project-link'>"+no_count+"</td></tr>"
+    return HTMLResponse(content=html_get_projects(table, use_id, username), status_code=200)
+
+
+@app.get('/{use_id}/{username}/Non_English/projects/{use_id1}/{project_name}', response_class=HTMLResponse)
+async def get_files(request: Request):
+    mydb = Connect.db()
+    use_id = request.path_params['use_id']
+    username = request.path_params['username']
+    project_name = request.path_params['project_name']
+    record_cursor = mydb.cursor()
+    record_cursor.execute("SELECT * FROM Records WHERE project_name='" +
+                          project_name+"' AND language != 'English' ORDER BY date_time DESC;")
+    table_rows = record_cursor.fetchall()
+    table = ""
+    for re in table_rows:
+        table += "<tr><td>"+re[1].strftime("%d-%m-%Y %I:%M %p") + \
+            "</td><td>"+re[2]+"</td><td>"+re[4]+"</td>"
+        table += "<td><a href='"+re[5]+"' class='dwn-link'>Download</a></td>"
+        table += "<td><a href='"+re[6] + \
+            "' class='dwn-link'>Download</a></td></tr>"
+    return HTMLResponse(content=html_get_non_english_records(table, use_id, username, project_name), status_code=200)
+
 
 # ------------------------------view errors from the API------------------------------
 
