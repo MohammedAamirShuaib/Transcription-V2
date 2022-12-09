@@ -25,17 +25,17 @@ p {
 .backbtn {
     position: relative;
     cursor: pointer;
-    outline: none;
-    background-color: #330c53;
+    border: 1px solid;
     border-color: #330c53;
-    padding: 2px 6px;
-    border-radius: 5px;
+    outline: none;
+    background-color: #09b794;
+    padding: 10px 25px;
+    border-radius: 15px;
     box-shadow: 2px 2px 5px rgb(82, 82, 82);
     overflow: hidden;
     font-family: Montserrat, sans-serif;
-    font-size: 16px;
-    color:white;
-}
+    font-size: 18px;
+  }
 
 table {
     margin: auto;

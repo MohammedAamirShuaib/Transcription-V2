@@ -6,6 +6,22 @@
   font-family: "Montserrat", sans-serif;
 }
 
+.other_lang {
+  background: #09b794;
+  color: #330c53;
+  padding: 11px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  border-radius: 15px;
+  border: 2px solid;
+  border-color:#330c53;
+  font-family: Montserrat, sans-serif;
+  font-size: 18px;
+  text-decoration: 	none;
+  box-shadow: 2px 2px 5px rgb(82, 82, 82);
+}
+
 h1 {
   color: #330c53;
   text-align: center;
@@ -22,22 +38,6 @@ body{
   background:linear-gradient(45deg,#058ae5,#09b794);
   height: 100vh;
   overflow: hidden;
-}
-
-.other_lang {
-  background: #09b794;
-  color: #330c53;
-  padding: 11px 16px;
-  cursor: pointer;
-  text-decoration: none;
-  text-align: center;
-  border-radius: 15px;
-  border: 2px solid;
-  border-color:#330c53;
-  font-family: Montserrat, sans-serif;
-  font-size: 18px;
-  text-decoration: 	none;
-  box-shadow: 2px 2px 5px rgb(82, 82, 82);
 }
 
 .content_box {

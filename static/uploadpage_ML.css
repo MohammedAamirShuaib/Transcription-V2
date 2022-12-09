@@ -179,7 +179,7 @@ body{
 .backbtn {
   position: relative;
   cursor: pointer;
-  border: 1px solid;
+  border: 2px solid;
   border-color: #330c53;
   outline: none;
   background-color: #09b794;
@@ -189,6 +189,7 @@ body{
   overflow: hidden;
   font-family: Montserrat, sans-serif;
   font-size: 18px;
+  color:#330c53;
 }
 
 .note_box{

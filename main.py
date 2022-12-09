@@ -103,38 +103,44 @@ async def create_project(request: Request, username, use_id):
 
 @app.post('/{username}/add_new_project/')
 async def new_project(request: Request, username, project_name: str = Form(...)):
-    mydb = Connect.db()
-    add_project_cursor = mydb.cursor()
-    query = "INSERT into Projects(project_name,username, language) values(%s,%s,%s)"
-    add_project = [(project_name, username, "English"),]
-    add_project_cursor.executemany(query, add_project)
-    mydb.commit()
-    use_id = str(uuid.uuid4())[0:8]
-    dir_name = str(uuid.uuid4())
-    project_cursor = mydb.cursor()
-    project_cursor.execute("select project_name from Projects;")
-    select_box_html = ""
-    for i in project_cursor:
-        select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
-    return templates.TemplateResponse("added_new_project.html", {'request': request, 'username': username})
+    try:
+        mydb = Connect.db()
+        add_project_cursor = mydb.cursor()
+        query = "INSERT into Projects(project_name,username, language) values(%s,%s,%s)"
+        add_project = [(project_name, username, "English"),]
+        add_project_cursor.executemany(query, add_project)
+        mydb.commit()
+        use_id = str(uuid.uuid4())[0:8]
+        dir_name = str(uuid.uuid4())
+        project_cursor = mydb.cursor()
+        project_cursor.execute("select project_name from Projects;")
+        select_box_html = ""
+        for i in project_cursor:
+            select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
+        return templates.TemplateResponse("added_new_project.html", {'request': request, 'username': username})
+    except:
+        return {'Error': 'Project already exists'}
 
 
 @app.post('/{use_id}/{username}/Non_English/add_new_project/')
 async def new_project(request: Request, username, project_name: str = Form(...)):
-    mydb = Connect.db()
-    add_project_cursor = mydb.cursor()
-    query = "INSERT into Projects(project_name,username,language) values(%s,%s,%s)"
-    add_project = [(project_name, username, "Non English"),]
-    add_project_cursor.executemany(query, add_project)
-    mydb.commit()
-    use_id = str(uuid.uuid4())[0:8]
-    dir_name = str(uuid.uuid4())
-    project_cursor = mydb.cursor()
-    project_cursor.execute("select project_name from Projects;")
-    select_box_html = ""
-    for i in project_cursor:
-        select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
-    return templates.TemplateResponse("added_new_project.html", {'request': request, 'username': username})
+    try:
+        mydb = Connect.db()
+        add_project_cursor = mydb.cursor()
+        query = "INSERT into Projects(project_name,username,language) values(%s,%s,%s)"
+        add_project = [(project_name, username, "Non English"),]
+        add_project_cursor.executemany(query, add_project)
+        mydb.commit()
+        use_id = str(uuid.uuid4())[0:8]
+        dir_name = str(uuid.uuid4())
+        project_cursor = mydb.cursor()
+        project_cursor.execute("select project_name from Projects;")
+        select_box_html = ""
+        for i in project_cursor:
+            select_box_html += "<option value='"+i[0]+"'>"+i[0]+"</option>"
+        return templates.TemplateResponse("added_new_project.html", {'request': request, 'username': username})
+    except:
+        return {'Error': 'Project already exists'}
 
 # ------------------------------view previous records------------------------------
 
