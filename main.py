@@ -36,7 +36,7 @@ async def landingpage(request: Request, use_id, username: str = Form(...), passw
 @app.get('/{use_id}/{username}/Non_English/', response_class=HTMLResponse)
 async def other_transcription(request: Request, use_id, username):
     select_box_html, language_box_html, dir_name = get_other_projects()
-    return HTMLResponse(content=html_other_webpage(select_box_html, language_box_html, dir_name, use_id, username), status_code=200)
+    return HTMLResponse(content=html_non_english_webpage(select_box_html, language_box_html, dir_name, use_id, username), status_code=200)
 
 # ------------------------------start transcriptions------------------------------
 
@@ -45,7 +45,7 @@ async def other_transcription(request: Request, use_id, username):
 async def transcribe_english(*, project_name: str = Form(...), files: List[UploadFile] = File(...), dir_name, use_id, username):
     html, exception_html, username, use_id = start_transcribe(
         project_name, files, dir_name, use_id, username, "en")
-    return HTMLResponse(content=html_completed(html, exception_html, username, use_id), status_code=200)
+    return HTMLResponse(content=html_english_completed(html, exception_html, username, use_id), status_code=200)
 
 
 @app.post("/{use_id}/{username}/Other/{dir_name}/", response_class=HTMLResponse)
