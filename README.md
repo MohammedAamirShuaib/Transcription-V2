@@ -49,19 +49,33 @@ HTML is the standard markup language for documents designed to be displayed in a
 ![image](https://user-images.githubusercontent.com/98326079/159206137-2b51e6c3-1460-4b57-8e7e-d43567afe108.png)
 
 ## User interface:
-Application Homepage
-  ![image](https://user-images.githubusercontent.com/98326079/158756745-9a14a189-dd93-4e8c-a4f3-4ca7c3759eb5.png)
+Login Page
+![image](https://user-images.githubusercontent.com/98326079/206686242-959650d7-80bc-40ab-95c1-6b9c98ddb114.png)
+
+Application Homepage (English Transcription)
+![image](https://user-images.githubusercontent.com/98326079/206686317-00e308ef-468b-4caf-84d9-9204649f3132.png)
+
+Selecting Project
+![image](https://user-images.githubusercontent.com/98326079/206686496-b9187ba9-cfd1-4e89-a561-95188b427207.png)
 
 Uploading files to transcribe
- ![image](https://user-images.githubusercontent.com/98326079/158756782-02ff893e-6356-4049-a166-db02ce8bfe0e.png)
+![image](https://user-images.githubusercontent.com/98326079/206686670-448fc8fc-fecb-4a1c-8bbd-6eb26bf47dbc.png)
 
 Loading screen while transcribing the files
-![image](https://user-images.githubusercontent.com/98326079/158756816-81bd3c54-ca46-4373-ae81-a62672777215.png)
+![image](https://user-images.githubusercontent.com/98326079/206686885-2b4fa448-5178-4838-ac8c-5fdb97f8e5bf.png)
 
-Displaying the transcription status and downloading the transcribed documents
- ![image](https://user-images.githubusercontent.com/98326079/158756839-7506b66f-4afb-414d-85e0-02a50c9128bc.png)
+Downloading the transcribed documents
+![image](https://user-images.githubusercontent.com/98326079/206687015-6170316e-ad84-4813-9fde-add4602507f8.png)
 
-Displaying console logs for monitoring the transcriptions
- ![image](https://user-images.githubusercontent.com/98326079/158756861-4d5cbb3d-4d5e-471b-919d-0b27827a26c1.png)
+Homepage (Non English Transcription)
+![image](https://user-images.githubusercontent.com/98326079/206687222-f4b50791-fce9-4fc5-a4f6-9ca4ec2eda9f.png)
+
+Displaying previous records
+![image](https://user-images.githubusercontent.com/98326079/206687387-761d50a1-263f-410e-906d-01d6da176085.png)
+![image](https://user-images.githubusercontent.com/98326079/206687451-cb9641ad-2b9f-4162-b9e2-afc77c1f85c4.png)
+
+Displaying console logs for monitoring
+![image](https://user-images.githubusercontent.com/98326079/206687547-b45c8615-65c4-4e5c-98e3-15e8ccec9da9.png)
+
 
 
